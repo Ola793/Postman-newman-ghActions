@@ -1,0 +1,38 @@
+name: Pet Store Collection
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  newman:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Newman and HTML Report
+        run: |
+          npm install -g newman newman-reporter-html
+
+      - name: Run Pet Store Collection
+        run: |
+          newman run petstore.collection.json \
+            --reporters cli,html \
+            --reporter-html-export newman-report.html
+
+      - name: Deploy to GitHub Pages
+        run: |
+          mkdir output
+          mv newman-report.html output/
+          echo 'index.html' > output/.nojekyll
+          git add output
+          git commit -m 'Deploy Pet Store Newman report'
+          git push -f https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:gh-pages
