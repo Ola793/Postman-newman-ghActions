@@ -28,11 +28,11 @@ jobs:
             --reporters cli,html \
             --reporter-html-export newman-report.html || true
 
-      - name: Deploy to GitHub Pages
+      - name: Prepare Assets for GitHub Pages
         run: |
           mkdir output
           mv newman-report.html output/
-          cp -r ~/.npm/_newman/ output/newman/  # Copy Newman assets
+          cp -r node_modules/newman-reporter-html/html output/  # Copy assets from the reporter
           echo 'index.html' > output/.nojekyll
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@github.com'
