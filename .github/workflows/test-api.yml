@@ -56,11 +56,16 @@ jobs:
         run: |
           git checkout --orphan gh-pages
           git reset --hard
-          # Move the Newman report directly to the root directory
-          mv testResults/htmlreport.html index.html  # Rename it to index.html for easier access
-          echo '.nojekyll' > .nojekyll  # Prevent Jekyll from processing
-          git add index.html .nojekyll  # Only add the necessary files to the root
-          git commit -m 'Deploy Newman Report to GitHub Pages'
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
+          # Check if report is generated
+          if [ -f "testResults/htmlreport.html" ]; then
+            mv testResults/htmlreport.html index.html  # Rename to index.html
+            echo '.nojekyll' > .nojekyll  # Prevent Jekyll from processing
+            git add index.html .nojekyll
+            git commit -m 'Deploy Newman Report to GitHub Pages'
+            git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
+          else
+            echo "Newman report not found!"
+            exit 1
+          fi
   
   
