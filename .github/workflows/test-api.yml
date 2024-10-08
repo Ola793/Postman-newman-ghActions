@@ -8,11 +8,11 @@ jobs:
   test-api:
     runs-on: ubuntu-latest
     steps:
-      # Check out the repository under $GITHUB_WORKSPACE
+      # Check out the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Install Node.js on the runner
+      # Install Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,28 +29,29 @@ jobs:
         run: |
           newman run petstore.collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme
 
-      # List files to verify the report is generated correctly
+      # List files to verify the report is generated
       - name: List files in workspace
         run: ls -R
 
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         run: |
-          # Switch to an orphan gh-pages branch
-          git checkout --orphan gh-pages
+          # Create or switch to the gh-pages branch without removing existing content
+          if git show-ref --quiet refs/heads/gh-pages; then
+            git checkout gh-pages
+          else
+            git checkout -b gh-pages
+          fi
           
-          # Remove all existing files in the branch
-          git rm -rf .
-          
-          # Move the report to index.html in the root directory
+          # Copy the report to the root of the gh-pages branch as index.html
           mv testResults/htmlreport.html index.html
           
-          # Prevent Jekyll from processing the content
+          # Prevent Jekyll from processing
           echo '.nojekyll' > .nojekyll
           
-          # Add and commit the new files
+          # Add and commit changes
           git add index.html .nojekyll
-          git commit -m 'Deploy Newman Report to GitHub Pages'
+          git commit -m 'Deploy Newman Report to GitHub Pages' || echo "No changes to commit"
           
-          # Push to gh-pages
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
+          # Push the changes to the gh-pages branch
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
