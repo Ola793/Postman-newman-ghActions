@@ -31,7 +31,7 @@ jobs:
 
       - name: Run POSTMAN Collection
         run: |
-          newman run petstore.collection.json -r htmlextra \
+          npx newman run petstore.collection.json -r htmlextra \
             --reporter-htmlextra-export testResults/htmlreport.html \
             --reporter-htmlextra-darkTheme || true
 
