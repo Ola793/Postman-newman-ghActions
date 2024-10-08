@@ -3,55 +3,48 @@ on:
   push:
     branches:
       - main
-
 jobs:
   test-api:
     runs-on: ubuntu-latest
     steps:
-      # Check out the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Install Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      # Install Newman and htmlextra reporter
       - name: Install newman
         run: |
           npm install -g newman
           npm install -g newman-reporter-htmlextra
 
-      # Run the POSTMAN collection and generate the report
+      - name: Make Directory for results
+        run: mkdir -p testResults
+
       - name: Run POSTMAN collection
         run: |
           newman run petstore.collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme || true
 
-      # List files to verify the report is generated
-      - name: List files in workspace
-        run: ls -R
-
-      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         run: |
-          # Create or switch to the gh-pages branch without removing existing content
-          if git show-ref --quiet refs/heads/gh-pages; then
-            git checkout gh-pages
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+
+          # Create a new orphan branch for deployment
+          git checkout --orphan gh-pages
+
+          # Remove all files from the branch
+          git rm -rf .
+
+          # Check if the report was generated
+          if [ -f "testResults/htmlreport.html" ]; then
+            mv testResults/htmlreport.html index.html  # Move to index.html
+            echo '.nojekyll' > .nojekyll  # Prevent Jekyll from processing
+            git add index.html .nojekyll
+            git commit -m 'Deploy Newman Report to GitHub Pages' || echo "No changes to commit"
+            git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
           else
-            git checkout -b gh-pages
+            echo "Newman report not found, skipping deployment!"
           fi
-          
-          # Copy the report to the root of the gh-pages branch as index.html
-          mv testResults/htmlreport.html index.html
-          
-          # Prevent Jekyll from processing
-          echo '.nojekyll' > .nojekyll
-          
-          # Add and commit changes
-          git add index.html .nojekyll
-          git commit -m 'Deploy Newman Report to GitHub Pages' || echo "No changes to commit"
-          
-          # Push the changes to the gh-pages branch
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Ola793/Postman-newman-ghActions gh-pages
