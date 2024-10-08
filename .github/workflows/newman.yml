@@ -38,11 +38,16 @@ jobs:
           name: RunReports
           path: testResults
 
+      - name: List node_modules
+        run: |
+          echo "Contents of node_modules:"
+          ls -R node_modules
+
       - name: Prepare Assets for GitHub Pages
         run: |
           mkdir output
           mv testResults/htmlreport.html output/
-          cp -r node_modules/newman-reporter-htmlextra/html output/  # Copy assets from the reporter
+          cp -r node_modules/newman-reporter-htmlextra/html output/ || echo "HTML assets not found"
           echo 'index.html' > output/.nojekyll
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@github.com'
