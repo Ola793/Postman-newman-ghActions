@@ -1,4 +1,4 @@
-name: Pet Store Collection
+name: Pet Store Collection Test and Deploy
 
 on:
   push:
@@ -18,21 +18,31 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: Install Newman and HTML Report
+      - name: Install Newman and HTML Reporter
         run: |
-          npm install -g newman newman-reporter-html
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
 
-      - name: Run Pet Store Collection
+      - name: Make Directory for Results
+        run: mkdir -p testResults
+
+      - name: Run POSTMAN Collection
         run: |
-          newman run petstore.collection.json \
-            --reporters cli,html \
-            --reporter-html-export newman-report.html || true
+          newman run petstore.collection.json -r htmlextra \
+            --reporter-htmlextra-export testResults/htmlreport.html \
+            --reporter-htmlextra-darkTheme || true
+
+      - name: Output the Run Details
+        uses: actions/upload-artifact@v2
+        with:
+          name: RunReports
+          path: testResults
 
       - name: Prepare Assets for GitHub Pages
         run: |
           mkdir output
-          mv newman-report.html output/
-          cp -r newman-report-html/assets output/  # Copy the assets from the report
+          mv testResults/htmlreport.html output/
+          cp -r node_modules/newman-reporter-htmlextra/html output/  # Copy assets from the reporter
           echo 'index.html' > output/.nojekyll
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@github.com'
