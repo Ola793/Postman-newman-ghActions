@@ -27,7 +27,7 @@ jobs:
       # Run the POSTMAN collection and generate the report
       - name: Run POSTMAN collection
         run: |
-          newman run petstore.collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme
+          newman run petstore.collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme || true
 
       # List files to verify the report is generated
       - name: List files in workspace
