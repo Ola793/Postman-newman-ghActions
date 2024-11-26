@@ -25,7 +25,7 @@ jobs:
 
       - name: Run POSTMAN collection
         run: |
-          newman run petstore.collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme || true
+          newman run petstore.collection.v2.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme || true
 
       - name: Deploy to GitHub Pages
         run: |
